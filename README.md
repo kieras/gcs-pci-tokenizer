@@ -27,8 +27,8 @@ These commands create two separate Cloud Functions: one for turning the card num
 
 These same deploy commands are available in convenient utility scripts:
 ```
-tools/deploy-tokenize.sh
-tools/deploy-detokenize.sh
+src/deploy-tokenize.sh
+src/deploy-detokenize.sh
 ```
 
 Once the functions are deployed, you can verify they were successfully created by navigating to the Cloud Functions page in the Google Cloud Console. Doing so will not close the Cloud Shell. You should see your two functions with green checkmarks next to each.
