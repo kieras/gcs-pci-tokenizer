@@ -19,7 +19,7 @@ const DEBUG_LOGGING = false;
 const VERSION_LOGGING = true;
 
 /* Helpful init stuff */
-const fileVersion = require('fs').statSync('index.js').mtimeMs;
+const fileVersion = require('fs').statSync(__filename).mtimeMs;
 // This log line is helpful to keep track of which version of the CF is running.
 // The timestamp of index.js is logged at initial script launch as well as each
 // individual execution of tokenize() and detokenize()
