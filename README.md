@@ -5,8 +5,37 @@ This project employs KMS and Datastore to securely encrypt and tokenize sensitiv
 
 For more information, see the Google Cloud solution paper on [Tokenizing Sensitive Cardholder Data for PCI DSS](https://TBD).
 
-# Usage
-Open the GCP Cloud Console and then open the Cloud Shell. Cloud Shell can be opened with the ">_" icon in the top-right of the console.
+# Configuration
+Before the code can bed deployed, some customizations must be made. See the configuration file config/default.json for available options before proceeding. Best practice is to copy config/default.json to config/local.json and make edits there.
+
+# Running in Docker
+Run the following command to check out the project code and move into your working directory:
+
+```
+git clone https://github.com/ianmaddox/gcs-cf-tokenizer
+cd gcs-cf-tokenizer
+```
+
+The application can then be deployed as a Docker image with the following script:
+```
+#!/usr/bin/env bash
+APP=gcs-cf-tokenizer
+IMG=ianmaddox/$APP
+API_PORT=80
+
+docker stop $APP
+docker rm $APP
+docker run \
+  -d \
+  --name $APP \
+  -e TZ="America/Los_Angeles" \
+  -p 443:443/tcp \
+  -p $API_PORT:80/tcp \
+  $IMG
+```
+
+# Running in Cloud Functions
+You can also deploy this application in Google Cloud Functions. The exported function names are "tokenize" and "detokenize". To do this through the web UI, open the GCP Cloud Console and then open the Cloud Shell. Cloud Shell can be opened with the ">_" icon in the top-right of the console.
 Run the following command to check out the project code and move into the working directory:
 
 ```
@@ -33,5 +62,39 @@ src/deploy-detokenize.sh
 
 Once the functions are deployed, you can verify they were successfully created by navigating to the Cloud Functions page in the Google Cloud Console. Doing so will not close the Cloud Shell. You should see your two functions with green checkmarks next to each.
 
+# Usage
+Once the application has been deployed, there are two available API calls.
+### Tokenizing a card
+```
+Host and Port:  See deployment process output
+Path:           /tokenize
+Method:         HTTP POST
+Params:
+  * auth_token:   An OAuth 2.0 authentication token
+  * [project_id:  GCP project ID]
+  * cc:           The payment card to tokenize
+  * mm:           Two digit expiration month
+  * yyyy:         Four digit expiration year
+  * user_id:      Arbitrary user identification string
+
+Response:
+  * On success: HTTP 200 and 64 character token value
+  * On failure: HTTP 4xx,5xx and error message
+```
+
+  ### Detokenizing a card
+```
+Host and Port:  See deployment process output
+Path:           /detokenize
+Method:         HTTP POST
+Params:
+  * auth_token:   An OAuth 2.0 authentication token
+  * [project_id:  GCP project ID]
+  * cc_token:     64-character card token
+
+Response:
+  * On success: HTTP 200 and 64 character token value
+  * On failure: HTTP 4xx,5xx and error message
+```
 # Apache 2.0 License
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)

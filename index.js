@@ -15,37 +15,31 @@ limitations under the License.
 */
 
 'use strict';
-const DEBUG_LOGGING = false;
-const VERSION_LOGGING = true;
-
-/* Helpful init stuff */
-const fileVersion = require('fs').statSync(__filename).mtimeMs;
-// This log line is helpful to keep track of which version of the CF is running.
-// The timestamp of index.js is logged at initial script launch as well as each
-// individual execution of tokenize() and detokenize()
-logVersion(`CF LAUNCHED v.${fileVersion}`);
-
-/* Required libraries */
+/* Required libraries and supporting vars */
+process.env.NODE_CONFIG_DIR = process.env.NODE_CONFIG_DIR || __dirname + '/config/';
+const config = require('config');
 const {google} = require('googleapis');
 const crypto = require('crypto');
 const Datastore = require('@google-cloud/datastore');
+const authServices = [];
 
 /* Project variables */
-var projectId = ''; // Used for both KMS and DS auth.
-                    // Overridden if project_id is passed as a POST variable next to auth_token
-                    // If neither is provided, the projectID for this CF is used
+// See config/default.json for more information
+var projectId = config.get("general.project_id");
+const DEBUG_LOGGING = config.get("logging.debug");
+const VERSION_LOGGING = config.get("logging.version");
+const keyRingLocation = config.get("kms.key_ring_location");
+const keyRingId = config.get("kms.key_ring_id");
+const cryptoKeyId = config.get("kms.crypto_key_id");
+const dsNamespace = config.get("datastore.namespace");
+const kind = config.get("datastore.kind");
 
-/* KMS variables */
-// THESE VARIABLES MUST BE UPDATED TO MATCH YOUR KMS CONFIGURATION
-const keyRingLocation = 'global';
-const keyRingId = 'tokenization-service-kr';
-const cryptoKeyId = 'cc-tokenization';
-
-/* Datastore variables */
-// You shouldn't need to change these variables.
-const dsNamespace = 'tokenizer';
-const kind = 'cc';
-const authServices = [];
+/* Helpful init stuff */
+const appVersion = require('fs').statSync(__filename).mtimeMs + " env:" + process.env.NODE_ENV;
+// This log line is helpful to keep track of which version of the CF is running.
+// The timestamp of index.js is logged at initial script launch as well as each
+// individual execution of tokenize() and detokenize()
+logVersion(`CF LAUNCHED v.${appVersion}`);
 
 
 /**
@@ -55,7 +49,7 @@ const authServices = [];
  *  cc         - 14-16 digit credit card number
  *  mm         - 2 digit month
  *  yyyy       - 4 digit year
- *  userid     - arbitrary user ID string (optional)
+ *  user_id     - arbitrary user ID string (optional)
  *
  * Returns an alphanumeric string which can be used as a PCI DSS compliant token
  * in-place of a credit card number in out-of-scope data storage environments.
@@ -64,12 +58,12 @@ const authServices = [];
  * @param {object} res - CF response object
  */
 exports.tokenize = async (req, res) => {
-  logVersion(`tokenizing with CF v.${fileVersion}`);
+  logVersion(`tokenizing with CF v.${appVersion}`);
   // The value contains a JSON document representing the entity we want to save
   var cc = req.body.cc;
   var mm = req.body.mm;
   var yyyy = req.body.yyyy;
-  var userid = req.body.userid;
+  var userid = req.body.user_id;
   var authToken = req.body.auth_token;
   var projectId = req.body.project_id || projectId || process.env.GCP_PROJECT;
 
@@ -82,11 +76,11 @@ exports.tokenize = async (req, res) => {
   }
 
   if(!mm || mm < 0 || mm > 12) {
-    return res.status(500).send("Invalid input for mm");
+    return res.status(500).send('Invalid input for mm');
   }
 
   if(!yyyy || yyyy < 2010 || yyyy > 3000) {
-    return res.status(500).send("Invalid input for yyyy");
+    return res.status(500).send('Invalid input for yyyy');
   }
   try {
     var auths = await authenticateAndBuildServices(authToken);
@@ -130,13 +124,13 @@ exports.tokenize = async (req, res) => {
         })
         .catch((err) => {
           console.error(err);
-          res.status(500).send(err.message);
+          res.status(500).send(`Error saving to Datastore: ${err.message}`);
           return false;
         });
     });
   }
   catch(err) {
-    res.status(500).send(err.message);
+    res.status(500).send(`Error during tokenization: ${err.message}. Check for invalid auth_token`);
     return false;
   }
 }
@@ -155,7 +149,7 @@ exports.tokenize = async (req, res) => {
  * @param {object} res - CF response object
  */
 exports.detokenize = async (req, res) => {
-  logVersion(`detokenizing ver ${fileVersion}`);
+  logVersion(`detokenizing ver ${appVersion}`);
   var ccToken = req.body.cc_token;
   var authToken = req.body.auth_token;
   var projectId = req.body.project_id || projectId || process.env.GCP_PROJECT;
@@ -220,7 +214,7 @@ exports.detokenize = async (req, res) => {
     })
   }
   catch(e) {
-    res.status(500).send(err.message);
+    res.status(500).send(`Detokenization error: ${err.message}`);
     return false;
   }
 };

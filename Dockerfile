@@ -23,7 +23,7 @@ RUN set -x \
   && cd /opt \
   && echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections nodejs \
   && apt-get update \
-  && apt-get install --no-install-recommends -y jq wget python git nodejs ca-certificates npm build-essential \
+  && apt-get install --no-install-recommends -y jq wget python git nodejs ca-certificates npm build-essential curl \
   && wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86_64.tar.gz \
   && tar zxfv google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86_64.tar.gz \
   && ./google-cloud-sdk/install.sh \
@@ -53,9 +53,16 @@ RUN apt-get clean \
 
 EXPOSE 443
 EXPOSE 80
-WORKDIR "/src"
-COPY "src/docker_entrypoint.sh" "/src/docker_entrypoint.sh"
-COPY "src/server.js" "/src/server.js"
-# kill above - this will be baked into the git repo
-RUN chmod +x /src/docker_entrypoint.sh
-ENTRYPOINT ["/src/docker_entrypoint.sh"]
+
+# Create the application directory
+RUN mkdir /tokenizer
+
+# Create a stub to pull the code down later
+RUN git clone --no-checkout https://github.com/ianmaddox/gcs-cf-tokenizer /tokenizer
+
+# Create a bootstrapped docker_entrypoint.sh file from the local copy next to this Dockerfile
+# This file will be overwritten by the latest from git on first run
+RUN mkdir /tokenizer/src
+COPY "src/docker_entrypoint.sh" "/tokenizer/src/docker_entrypoint.sh"
+WORKDIR "/tokenizer"
+ENTRYPOINT ["/tokenizer/src/docker_entrypoint.sh"]

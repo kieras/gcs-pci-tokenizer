@@ -1,25 +1,28 @@
 #!/usr/bin/env bash
-CONTAINER_ALREADY_STARTED="/src/.firstrun_executed_flag"
-if [ ! -e $CONTAINER_ALREADY_STARTED ]; then
-    touch $CONTAINER_ALREADY_STARTED
-    echo "-- First container startup --"
-apt-get update && apt-get install -y nano curl  > /dev/null & #kill - only for build debugging
+# github ianmaddox/gcs-cf-tokenizer
+# Docker container bootstrapping script
+# This file is not used with Cloud Functions.
+# See ../README.md for license and more info
 
-    cd /src
-    git clone https://github.com/ianmaddox/gcs-cf-tokenizer
-    cd gcs-cf-tokenizer
-#    cp src/server.js /src/server.js
+CONTAINER_ALREADY_STARTED="/tokenizer/.firstrun_executed_flag"
+if [ ! -e $CONTAINER_ALREADY_STARTED ]; then
+    echo "-- First container startup --"
+
+    cd /tmp
+    curl -L https://www.npmjs.com/install.sh | sh
+
+    cd /tokenizer
+    git reset --hard HEAD
+
     npm install
-npm install express #kill - should be in git
-cp ../server.js . #kill - the latest should be in git
     ls -ltrha
-    cd ..
+    touch $CONTAINER_ALREADY_STARTED
 else
     echo "-- Not first container startup --"
     git pull upstream master
 fi
 
-node gcs-cf-tokenizer/server.js
+node /tokenizer/src/server.js
 
 #This command keeps the container running
 tail -f /dev/null

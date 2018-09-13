@@ -23,6 +23,12 @@ const {google} = require('googleapis');
 async function main () {
   // This method looks for the GOOGLE_CLOUD_PROJECT and GOOGLE_APPLICATION_CREDENTIALS
   // environment variables.
+  let authfile = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+  if (!require('fs').existsSync(authfile)) {
+    console.log(`ERROR: Auth file ${authfile} does not exist! Please set env var $GOOGLE_APPLICATION_CREDENTIALS`);
+    return false;
+  }
+
   const auth = await google.auth.getClient({
     // Scopes can be specified either as an array or as a single, space-delimited string.
     scopes: ['https://www.googleapis.com/auth/cloud-platform',
