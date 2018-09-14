@@ -6,7 +6,7 @@ This project employs KMS and Datastore to securely encrypt and tokenize sensitiv
 For more information, see the Google Cloud solution paper on [Tokenizing Sensitive Cardholder Data for PCI DSS](https://TBD).
 
 # Configuration
-Before the code can bed deployed, some customizations must be made. See the configuration file config/default.json for available options before proceeding. Best practice is to copy config/default.json to config/local.json and make edits there.
+Before the code can bed deployed, some customizations must be made. See the configuration file config/default.json for available options before proceeding. Best practice is to copy config/default.json to config/local.json and make edits there. More functionality is available for environment-specific configs. See https://www.npmjs.com/package/config for more info.
 
 # Running in Docker
 Run the following command to check out the project code and move into your working directory:
@@ -16,23 +16,7 @@ git clone https://github.com/ianmaddox/gcs-cf-tokenizer
 cd gcs-cf-tokenizer
 ```
 
-The application can then be deployed as a Docker image with the following script:
-```
-#!/usr/bin/env bash
-APP=gcs-cf-tokenizer
-IMG=ianmaddox/$APP
-API_PORT=80
-
-docker stop $APP
-docker rm $APP
-docker run \
-  -d \
-  --name $APP \
-  -e TZ="America/Los_Angeles" \
-  -p 443:443/tcp \
-  -p $API_PORT:80/tcp \
-  $IMG
-```
+The application can be deployed with the example script src/docker_run.sh. Any files added to config/ in the filesystem where the Docker image is run are linked into the app.
 
 # Running in Cloud Functions
 You can also deploy this application in Google Cloud Functions. The exported function names are "tokenize" and "detokenize". To do this through the web UI, open the GCP Cloud Console and then open the Cloud Shell. Cloud Shell can be opened with the ">_" icon in the top-right of the console.
