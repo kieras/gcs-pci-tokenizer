@@ -14,6 +14,7 @@ docker run \
   -d \
   --name $APP \
   -e TZ="America/Los_Angeles" \
+  -e NODE_ENV="dev" \
   -p 443:443/tcp \
   -p 8080:80/tcp \
   -v `pwd`/config:/config \
