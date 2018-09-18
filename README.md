@@ -1,5 +1,5 @@
-# Google Cloud Functions Credit Card Tokenization Service
-A PCI DSS compliant credit card tokenization service built for Google Cloud Functions.
+# Credit Card Tokenization Service for Google Cloud
+A PCI DSS compliant credit card tokenization service built for Google Cloud. Capable of running in both Docker and Cloud Functions.
 
 This project employs KMS and Datastore to securely encrypt and tokenize sensitive credit card data in a manner consistent with the PCI Data Security Standard. This code is applicable to SAQ A-EP and SAQ D type merchants of any compliance level.
 
@@ -19,7 +19,9 @@ cd gcs-cf-tokenizer
 The application can be deployed with the example script src/docker_run.sh. Any files added to config/ in the filesystem where the Docker image is run are linked into the app.
 
 # Running in Cloud Functions
-You can also deploy this application in Google Cloud Functions. The exported function names are "tokenize" and "detokenize". To do this through the web UI, open the GCP Cloud Console and then open the Cloud Shell. Cloud Shell can be opened with the ">_" icon in the top-right of the console.
+You can also deploy this application in Google Cloud Functions. This allows for rapid testing and development, but you are responsible for developing compensating controls for egress traffic restrictions if Cloud Functions are used as part of your in-scope PCI environment.
+
+The exported function names are "tokenize" and "detokenize". To do this through the web UI, open the GCP Cloud Console and then open the Cloud Shell. Cloud Shell can be opened with the ">_" icon in the top-right of the console.
 Run the following command to check out the project code and move into the working directory:
 
 ```
