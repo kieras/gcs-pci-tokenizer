@@ -228,7 +228,6 @@ exports.detokenize = async (req, res) => {
  * @return Array [ds:{Datastore}, kms:{KMS}] - A cached or newly created DS and KMS object pair
  */
 async function authenticateAndBuildServices(authToken) {
-  // return kmsAuthOrig(callback);
   debug(`authServices with token '${authToken}'`);
   if(authServices[authToken] !== undefined) {
     debug("Using cached KMS/DS");
