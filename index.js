@@ -214,7 +214,8 @@ exports.detokenize = async (req, res) => {
     })
   }
   catch(e) {
-    res.status(500).send(`Detokenization error: ${e.message}`);
+    const error_object = JSON.stringify(e)
+    res.status(500).send(`Detokenization error: ${error_object}`);
     return false;
   }
 };
