@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:18.04
+FROM ubuntu:18.10
 
 ENV CLOUDSDK_CORE_DISABLE_PROMPTS=1 \
   PATH=/opt/google-cloud-sdk/bin:$PATH \
-  GOOGLE_CLOUD_SDK_VERSION=215.0.0 \
-  GOOGLE_PROJECT=tokenizer-sol-v4
+  GOOGLE_CLOUD_SDK_VERSION=215.0.0
 
 RUN set -x \
   && cd /opt \
@@ -27,8 +26,7 @@ RUN set -x \
   && wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86_64.tar.gz \
   && tar zxfv google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86_64.tar.gz \
   && ./google-cloud-sdk/install.sh \
-  && gcloud components install kubectl \
-  && gcloud config set project ${GOOGLE_PROJECT}
+  && gcloud components install kubectl
 RUN apt-get clean \
   && cd / \
   && rm -rf \
